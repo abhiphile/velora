@@ -54,6 +54,17 @@ make build
 sudo ./bin/vellora run --hostname vellora /bin/bash
 ```
 
+### GitHub Codespaces
+
+The repository includes a dev container with Go 1.25, `iproute2`, `iptables`, and Linux debugging tools. Create a Codespace from the repository, then build and run the unit suite:
+
+```sh
+go build -o bin/vellora ./cmd/vellora
+go test ./...
+```
+
+Codespaces is a convenient Linux development environment, but Vellora's integration paths also need kernel capabilities for namespaces, mounts, cgroups, bridges, and firewall configuration. The Codespace host may not grant every capability; `sudo` cannot add a capability the host has withheld. Use a dedicated Linux VM for privileged end-to-end runtime tests when the Codespace reports `operation not permitted`.
+
 `run` configures the default bridge network automatically. To create and inspect it explicitly, use `sudo ./bin/vellora network create`, `sudo ./bin/vellora network ls`, and `sudo ./bin/vellora network inspect vellora0`. See [container networking](docs/networking.md) for packet paths and verification.
 
 Resource limits are optional. For example, `sudo ./bin/vellora run --memory=512M --cpu=1 --pids=64 -- /bin/bash` applies a 512 MiB memory ceiling, one CPU of bandwidth, and a 64 task limit. The host must expose the requested controllers to `/sys/fs/cgroup/vellora`; see [cgroups v2](docs/cgroups-v2.md) for setup and verification.

@@ -1,0 +1,31 @@
+{
+  "name": "Vellora Go development",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "runArgs": [
+    "--cap-add=SYS_ADMIN",
+    "--cap-add=SYS_CHROOT",
+    "--cap-add=NET_ADMIN",
+    "--cap-add=NET_RAW",
+    "--security-opt=seccomp=unconfined"
+  ],
+  "remoteUser": "vscode",
+  "postCreateCommand": "go mod download",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "golang.Go",
+        "ms-vscode.makefile-tools"
+      ],
+      "settings": {
+        "go.formatTool": "gofmt",
+        "go.useLanguageServer": true,
+        "editor.formatOnSave": true,
+        "[go]": {
+          "editor.defaultFormatter": "golang.Go"
+        }
+      }
+    }
+  }
+}
