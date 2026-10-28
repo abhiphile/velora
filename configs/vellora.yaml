@@ -1,0 +1,45 @@
+runtime_root: /run/vellora
+cgroup_root: /sys/fs/cgroup/vellora
+rootfs_path: ""
+image_path: /var/lib/vellora/images
+network_bridge: vellora0
+network_subnet: 10.88.0.0/16
+network_gateway: 10.88.0.1
+network_dns: ""
+network_mtu: 1500
+log_level: info
+storage:
+  proc_mount: /proc
+  tmp_mount: /tmp
+  dev_mount: /dev
+  pts_mount: /dev/pts
+  shm_mount: /dev/shm
+  tmp_size: 64m
+  dev_size: 16m
+  shm_size: 64m
+  devices:
+    - name: null
+      mode: 438
+      major: 1
+      minor: 3
+    - name: zero
+      mode: 438
+      major: 1
+      minor: 5
+    - name: full
+      mode: 438
+      major: 1
+      minor: 7
+    - name: random
+      mode: 438
+      major: 1
+      minor: 8
+    - name: urandom
+      mode: 438
+      major: 1
+      minor: 9
+    - name: tty
+      mode: 438
+      major: 5
+      minor: 0
+runtime_settings: {}
