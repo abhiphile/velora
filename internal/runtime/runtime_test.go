@@ -56,6 +56,24 @@ func TestSetEnvironmentReplacesDuplicateValues(t *testing.T) {
 	}
 }
 
+func TestContainerDNSBindIsOnlyNeededForPrivateRootFS(t *testing.T) {
+	events := []string{}
+	manager := &fakeNetworkManager{events: &events}
+	config := &network.ContainerConfig{ID: "test"}
+	if err := configureContainerDNS(context.Background(), manager, config, ""); err != nil {
+		t.Fatal(err)
+	}
+	if len(events) != 0 {
+		t.Fatalf("DNS bind attempted without private rootfs: %v", events)
+	}
+	if err := configureContainerDNS(context.Background(), manager, config, "/runtime/rootfs"); err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(events, []string{"bind-dns"}) {
+		t.Fatalf("DNS events = %v", events)
+	}
+}
+
 func TestRunPreparesAndCleansOverlayAroundProcess(t *testing.T) {
 	events := []string{}
 	runner := &fakeProcessRunner{events: &events}
@@ -139,7 +157,8 @@ func (manager *fakeNetworkManager) Connect(_ context.Context, _ network.Attachme
 func (*fakeNetworkManager) ConfigureContainer(context.Context, network.ContainerConfig) error {
 	return nil
 }
-func (*fakeNetworkManager) ConfigureDNS(context.Context, network.ContainerConfig, string) error {
+func (manager *fakeNetworkManager) ConfigureDNS(context.Context, network.ContainerConfig, string) error {
+	*manager.events = append(*manager.events, "bind-dns")
 	return nil
 }
 func (manager *fakeNetworkManager) Disconnect(context.Context, network.Attachment) error {

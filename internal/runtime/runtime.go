@@ -213,10 +213,8 @@ func Initialize(ctx context.Context, args []string, hostname string, mountNamesp
 	if overlayPaths.Merged != "" {
 		preparedRootFS.ReadOnly = false
 	}
-	if networkConfig != nil {
-		if err := networks.ConfigureDNS(ctx, *networkConfig, preparedRootFS.Path); err != nil {
-			return fmt.Errorf("configure container DNS resolver: %w", err)
-		}
+	if err := configureContainerDNS(ctx, networks, networkConfig, preparedRootFS.Path); err != nil {
+		return err
 	}
 	if err := rootfs.Enter(ctx, preparedRootFS); err != nil {
 		return fmt.Errorf("enter child rootfs: %w", err)
@@ -227,6 +225,19 @@ func Initialize(ctx context.Context, args []string, hostname string, mountNamesp
 	}
 	if err := process.Execute(args, environment); err != nil {
 		return fmt.Errorf("execute workload: %w", err)
+	}
+	return nil
+}
+
+func configureContainerDNS(ctx context.Context, networks network.NetworkManager, config *network.ContainerConfig, rootFS string) error {
+	if config == nil || rootFS == "" {
+		return nil
+	}
+	if networks == nil {
+		return fmt.Errorf("configure container DNS resolver: network manager is not configured")
+	}
+	if err := networks.ConfigureDNS(ctx, *config, rootFS); err != nil {
+		return fmt.Errorf("configure container DNS resolver: %w", err)
 	}
 	return nil
 }
