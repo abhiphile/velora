@@ -1,0 +1,7 @@
+# Architecture notes
+
+The CLI is an adapter: it parses flags and arguments, then delegates to runtime use cases or the local image store. Runtime orchestration owns lifecycle sequencing and depends on process, cgroup, rootfs, and OverlayFS manager interfaces. The Linux cgroup implementation owns cgroup v2 files; storage managers own mount syscalls. The image subsystem reads local OCI layouts and stores verified blobs and metadata; it does not yet unpack OCI layers into the runtime rootfs. Network remains a boundary for a later milestone.
+
+Configuration is loaded at the application boundary and passed into runtime operations. `slog` loggers are injected at construction boundaries rather than created globally. Contexts belong on long-running operations so cancellation can eventually propagate through process and kernel work.
+
+The `run` path re-executes the Vellora binary with clone flags, waits while the parent assigns cgroup membership, performs child-only namespace and storage setup, and calls `execve` for the requested command. The requested command becomes PID 1. With `--rootfs <layer-name>`, OverlayFS mounts a shared lower with a unique upper/work/merged set inside the child mount namespace. The rootfs manager then pivots into merged and installs private `/proc`, `/tmp`, `/dev`, `/dev/pts`, and `/dev/shm`. The upper survives the run; the mount namespace teardown removes its overlay mount. See ADR 0003 for the current reference-count scope.
