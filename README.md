@@ -63,7 +63,7 @@ go build -o bin/vellora ./cmd/vellora
 go test ./...
 ```
 
-Codespaces is a convenient Linux development environment, but Vellora's integration paths also need kernel capabilities for namespaces, mounts, cgroups, bridges, and firewall configuration. The Codespace host may not grant every capability; `sudo` cannot add a capability the host has withheld. Use a dedicated Linux VM for privileged end-to-end runtime tests when the Codespace reports `operation not permitted`.
+Codespaces is a convenient Linux development environment. The devcontainer requests the capabilities and namespaced IPv4 forwarding needed by the runtime. Its host may still deny kernel operations; `sudo` cannot add a capability the host has withheld. Use a dedicated Linux VM for privileged end-to-end runtime tests when the Codespace reports `operation not permitted`.
 
 `run` configures the default bridge network automatically. To create and inspect it explicitly, use `sudo ./bin/vellora network create`, `sudo ./bin/vellora network ls`, and `sudo ./bin/vellora network inspect vellora0`. See [container networking](docs/networking.md) for packet paths and verification.
 

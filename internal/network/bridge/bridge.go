@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/netip"
+	"strings"
 
 	"github.com/vellora/vellora/internal/network/command"
 )
@@ -50,8 +51,11 @@ func (manager *Manager) Ensure(ctx context.Context, name string, subnet netip.Pr
 	if _, err := manager.executor.Run(ctx, manager.ip, "link", "set", "dev", name, "up"); err != nil {
 		return fmt.Errorf("bring bridge up: %w", err)
 	}
-	if _, err := manager.executor.Run(ctx, manager.sysctl, "-w", "net.ipv4.ip_forward=1"); err != nil {
-		return fmt.Errorf("enable IPv4 forwarding: %w", err)
+	forwarding, inspectErr := manager.executor.Run(ctx, manager.sysctl, "-n", "net.ipv4.ip_forward")
+	if inspectErr == nil && strings.TrimSpace(string(forwarding)) == "1" {
+		manager.logger.Debug("IPv4 forwarding is already enabled")
+	} else if _, err := manager.executor.Run(ctx, manager.sysctl, "-w", "net.ipv4.ip_forward=1"); err != nil {
+		return fmt.Errorf("enable IPv4 forwarding (current value %q): %w", strings.TrimSpace(string(forwarding)), err)
 	}
 	return nil
 }
